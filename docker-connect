@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Get machine name from args (default: "default")
+MACHINE_NAME=${1:-default}
+
+echo "Starting virtual machine..."
+docker-machine start $MACHINE_NAME
+docker-machine ssh $MACHINE_NAME
+
+echo "Shutting down virtual machine..."
+if grep -q '"DriverName": "virtualbox"' <<< $(docker-machine inspect $MACHINE_NAME); then
+	# This is a VirtualBox machine, suspend it
+	VBoxManage controlvm $MACHINE_NAME savestate
+else
+	# This is a not a VirtualBox machine, shut it down
+	docker-machine stop $MACHINE_NAME
+fi
